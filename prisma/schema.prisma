@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ImageType {
+  food
+  receipt
+  body
+}
+
+enum ProcessingStatus {
+  pending
+  processing
+  completed
+  failed
+}
+
+model Upload {
+  id        String           @id @default(uuid())
+  userId    String?          @map("user_id")
+  type      ImageType
+  s3Key     String           @map("s3_key")
+  s3Url     String           @map("s3_url")
+  mimeType  String           @map("mime_type")
+  fileSize  Int              @map("file_size")
+  status    ProcessingStatus @default(pending)
+  createdAt DateTime         @default(now()) @map("created_at")
+  updatedAt DateTime         @updatedAt @map("updated_at")
+
+  processingResult ProcessingResult?
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("uploads")
+}
+
+model ProcessingResult {
+  id               String           @id @default(uuid())
+  uploadId         String           @unique @map("upload_id")
+  type             ImageType
+  status           ProcessingStatus @default(pending)
+  result           Json?
+  error            String?
+  processingTimeMs Int?             @map("processing_time_ms")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  completedAt      DateTime?        @map("completed_at")
+
+  upload Upload @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+
+  @@index([uploadId])
+  @@index([status])
+  @@map("processing_results")
+}
+
+model MealPlan {
+  id                   String   @id @default(uuid())
+  userId               String   @map("user_id")
+  calorieTarget        Int      @map("calorie_target")
+  proteinTarget        Int?     @map("protein_target")
+  carbsTarget          Int?     @map("carbs_target")
+  fatTarget            Int?     @map("fat_target")
+  diet                 String?
+  allergies            String[] @default([])
+  excludedIngredients  String[] @default([]) @map("excluded_ingredients")
+  daysCount            Int      @default(7) @map("days_count")
+  mealsPerDay          Int      @default(3) @map("meals_per_day")
+  generatedPlan        Json?    @map("generated_plan")
+  createdAt            DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("meal_plans")
+}
+
+model FoodDiaryEntry {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  uploadId    String?  @map("upload_id")
+  date        DateTime @default(now())
+  mealType    String   @map("meal_type")
+  foodName    String   @map("food_name")
+  servingSize String?  @map("serving_size")
+  calories    Float    @default(0)
+  protein     Float    @default(0)
+  carbs       Float    @default(0)
+  fat         Float    @default(0)
+  fiber       Float?
+  sugar       Float?
+  imageUrl    String?  @map("image_url")
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([userId, date])
+  @@map("food_diary_entries")
+}
