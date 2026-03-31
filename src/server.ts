@@ -34,7 +34,7 @@ app.use('/api', routes);
 // Legacy route: old mobile app hits /apiv2/order/* directly
 app.use(routes);
 
-app.get('*', (_req, res) => {
+app.use((_req, res) => {
   res.status(404).json({ status: false, message: 'Route not found' });
 });
 

@@ -24,11 +24,12 @@ export async function handleImageUpload(req: Request, res: Response, next: NextF
     }
 
     const id = uuidv4();
-    const imageUrl = file.location ?? await generatePresignedUrl(file.key);
+    const presignedUrl = await generatePresignedUrl(file.key);
+    const publicUrl = file.location ?? presignedUrl;
 
     const upload: UploadResult = {
       id,
-      url: imageUrl,
+      url: publicUrl,
       key: file.key,
       type,
       status: 'pending',
@@ -39,11 +40,11 @@ export async function handleImageUpload(req: Request, res: Response, next: NextF
     uploads.set(id, upload);
 
     upload.status = 'processing';
-    await enqueueProcessing(id, imageUrl, type);
+    await enqueueProcessing(id, presignedUrl, type);
 
     created(res, {
       id,
-      url: imageUrl,
+      url: publicUrl,
       type,
       status: 'processing',
       message: 'Image uploaded and queued for AI processing',

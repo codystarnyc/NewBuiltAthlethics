@@ -1,8 +1,8 @@
-import { openai } from '../../config/openai';
+import { getOpenAI } from '../../config/openai';
 import type { FoodAnalysis, BodyAnalysis, ReceiptAnalysis } from '../../types';
 
 export async function analyzeFoodImage(imageUrl: string): Promise<FoodAnalysis> {
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: 'gpt-4o',
     messages: [
       {
@@ -33,7 +33,7 @@ Return ONLY valid JSON, no markdown.`,
 }
 
 export async function analyzeReceiptImage(imageUrl: string): Promise<ReceiptAnalysis> {
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: 'gpt-4o',
     messages: [
       {
@@ -65,7 +65,7 @@ Return ONLY valid JSON, no markdown.`,
 }
 
 export async function analyzeBodyImage(imageUrl: string): Promise<BodyAnalysis> {
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: 'gpt-4o',
     messages: [
       {

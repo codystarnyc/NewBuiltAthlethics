@@ -1,4 +1,4 @@
-import { openai } from '../../config/openai';
+import { getOpenAI } from '../../config/openai';
 import type { MealPlanRequest, GeneratedMealPlan } from '../../types';
 
 export async function generateMealPlan(request: MealPlanRequest): Promise<GeneratedMealPlan> {
@@ -18,7 +18,7 @@ export async function generateMealPlan(request: MealPlanRequest): Promise<Genera
     request.fatTarget ? `Fat target: ${request.fatTarget}g` : null,
   ].filter(Boolean).join('\n');
 
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: 'gpt-4o',
     messages: [
       {

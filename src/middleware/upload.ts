@@ -1,6 +1,7 @@
 import multer from 'multer';
 import multerS3 from 'multer-s3';
 import path from 'path';
+import type { Request, Response, NextFunction } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { s3Client } from '../config/s3';
 import { env } from '../config/env';
@@ -29,7 +30,6 @@ function createS3Storage(prefix: string) {
   return multerS3({
     s3: s3Client as any,
     bucket: env.aws.s3BucketUploads,
-    acl: 'private',
     contentType: multerS3.AUTO_CONTENT_TYPE,
     key(_req, file, cb) {
       const ext = path.extname(file.originalname);
@@ -39,14 +39,29 @@ function createS3Storage(prefix: string) {
   });
 }
 
-export const uploadImage = multer({
+const rawImageUpload = multer({
   storage: createS3Storage('images'),
   fileFilter: imageFilter,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  limits: { fileSize: 10 * 1024 * 1024 },
 }).single('image');
 
-export const uploadVideo = multer({
+const rawVideoUpload = multer({
   storage: createS3Storage('videos'),
   fileFilter: videoFilter,
-  limits: { fileSize: 100 * 1024 * 1024 }, // 100MB
+  limits: { fileSize: 100 * 1024 * 1024 },
 }).single('video');
+
+function wrapMulter(upload: ReturnType<typeof multer>['single'] extends (...args: any) => infer R ? R : never) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    upload(req, res, (err: any) => {
+      if (err) {
+        console.error('Multer/S3 upload error:', err);
+        return next(new AppError(err.statusCode ?? 500, err.message ?? 'Upload failed'));
+      }
+      next();
+    });
+  };
+}
+
+export const uploadImage = wrapMulter(rawImageUpload);
+export const uploadVideo = wrapMulter(rawVideoUpload);
