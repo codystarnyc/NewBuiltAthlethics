@@ -1,15 +1,17 @@
 import express from 'express';
+import path from 'path';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import rateLimit from 'express-rate-limit';
 import { env } from './config/env';
 import routes from './routes';
+import adminRoutes from './routes/admin.routes';
 import { errorHandler } from './middleware/errorHandler';
 
 const app = express();
 
-app.use(helmet());
+app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
 app.use(cors());
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: false }));
@@ -29,9 +31,16 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
+// Admin dashboard (served as static HTML)
+app.use('/admin', express.static(path.join(__dirname, 'admin')));
+
+// Admin API
+app.use('/api/admin', adminRoutes);
+
+// Main API routes
 app.use('/api', routes);
 
-// Legacy route: old mobile app hits /apiv2/order/* directly
+// Legacy route: old mobile app hits root-level endpoints directly
 app.use(routes);
 
 app.use((_req, res) => {
@@ -41,7 +50,8 @@ app.use((_req, res) => {
 app.use(errorHandler);
 
 app.listen(env.port, () => {
-  console.log(`ImageUploadAPI v2 running on port ${env.port} [${env.nodeEnv}]`);
+  console.log(`Built Athletics API running on port ${env.port} [${env.nodeEnv}]`);
+  console.log(`Admin dashboard: http://localhost:${env.port}/admin`);
 });
 
 export default app;

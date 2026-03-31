@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Built Athletics Admin</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0f0f0f;--surface:#1a1a1a;--surface2:#252525;--border:#333;--accent:#ff4d00;--accent2:#ff6b2b;--text:#f0f0f0;--text2:#999;--green:#22c55e;--red:#ef4444;--blue:#3b82f6;--radius:10px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+a{color:var(--accent);text-decoration:none}
+
+/* Login */
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh}
+.login-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:40px;width:380px}
+.login-box h1{font-size:24px;margin-bottom:6px}
+.login-box p{color:var(--text2);margin-bottom:24px;font-size:14px}
+
+/* Layout */
+.app{display:none;min-height:100vh}
+.sidebar{position:fixed;top:0;left:0;width:220px;height:100vh;background:var(--surface);border-right:1px solid var(--border);padding:20px 0;overflow-y:auto;z-index:10}
+.sidebar .logo{padding:0 20px 20px;font-size:18px;font-weight:700;color:var(--accent);border-bottom:1px solid var(--border);margin-bottom:12px}
+.sidebar .logo span{color:var(--text)}
+.nav-item{display:block;padding:10px 20px;color:var(--text2);cursor:pointer;font-size:14px;transition:all .15s}
+.nav-item:hover,.nav-item.active{color:var(--text);background:var(--surface2)}
+.nav-item.active{border-left:3px solid var(--accent);padding-left:17px}
+.main{margin-left:220px;padding:28px 32px}
+
+/* Header */
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}
+.page-header h2{font-size:22px;font-weight:600}
+
+/* Cards */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:32px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.stat-card .label{font-size:12px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.stat-card .value{font-size:28px;font-weight:700}
+
+/* Table */
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:12px 16px;background:var(--surface2);font-size:12px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border)}
+td{padding:12px 16px;border-bottom:1px solid var(--border);font-size:14px;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+.thumb{width:48px;height:48px;border-radius:6px;object-fit:cover;background:var(--surface2)}
+.thumb-placeholder{width:48px;height:48px;border-radius:6px;background:var(--surface2);display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:11px}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.badge-active{background:rgba(34,197,94,.15);color:var(--green)}
+.badge-deleted{background:rgba(239,68,68,.15);color:var(--red)}
+
+/* Buttons */
+.btn{padding:8px 16px;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:600;transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent2)}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-danger{background:var(--red);color:#fff}
+.btn-danger:hover{background:#dc2626}
+.btn-group{display:flex;gap:6px}
+
+/* Forms */
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:12px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+input[type="text"],input[type="email"],input[type="password"],input[type="number"],textarea,select{width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;outline:none;transition:border-color .15s}
+input:focus,textarea:focus,select:focus{border-color:var(--accent)}
+textarea{resize:vertical;min-height:80px}
+select{cursor:pointer}
+input[type="file"]{padding:8px 0;background:none;border:none}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:100;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;width:520px;max-height:85vh;overflow-y:auto}
+.modal h3{font-size:18px;margin-bottom:20px}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+
+/* File upload area */
+.upload-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:24px;text-align:center;cursor:pointer;transition:border-color .15s}
+.upload-zone:hover{border-color:var(--accent)}
+.upload-zone.has-file{border-color:var(--green);border-style:solid}
+.upload-zone p{color:var(--text2);font-size:13px;margin-top:6px}
+.upload-zone .file-name{color:var(--green);font-weight:600}
+
+/* Video preview */
+.video-preview{max-width:100%;border-radius:6px;margin-top:8px}
+.media-current{display:flex;gap:12px;margin-bottom:12px;align-items:center}
+.media-current img{width:64px;height:64px;border-radius:6px;object-fit:cover}
+.media-current video{width:120px;border-radius:6px}
+.media-current .label{font-size:12px;color:var(--text2)}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#fff;padding:12px 20px;border-radius:8px;font-size:14px;font-weight:600;z-index:200;transform:translateY(80px);opacity:0;transition:all .3s}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.error{background:var(--red)}
+
+/* Logout */
+.sidebar-bottom{position:absolute;bottom:0;left:0;right:0;padding:16px 20px;border-top:1px solid var(--border)}
+.logout-btn{width:100%;padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text2);cursor:pointer;font-size:13px}
+.logout-btn:hover{color:var(--red);border-color:var(--red)}
+
+/* Empty state */
+.empty{text-align:center;padding:60px 20px;color:var(--text2)}
+.empty h3{color:var(--text);margin-bottom:8px}
+
+/* Loading */
+.spinner{display:inline-block;width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-row td{text-align:center;padding:40px}
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="loginView" class="login-wrap">
+  <div class="login-box">
+    <h1>Built Athletics</h1>
+    <p>Admin Dashboard</p>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="loginEmail" placeholder="admin@builtathletix.com">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="loginPassword" placeholder="Enter password">
+    </div>
+    <div id="loginError" style="color:var(--red);font-size:13px;margin-bottom:12px;display:none"></div>
+    <button class="btn btn-primary" style="width:100%;padding:12px" onclick="doLogin()">Sign In</button>
+  </div>
+</div>
+
+<!-- App -->
+<div id="appView" class="app">
+  <nav class="sidebar">
+    <div class="logo"><span>Built</span> Athletics</div>
+    <div class="nav-item active" data-page="dashboard" onclick="showPage('dashboard')">Dashboard</div>
+    <div class="nav-item" data-page="categories" onclick="showPage('categories')">Categories</div>
+    <div class="nav-item" data-page="exercises" onclick="showPage('exercises')">Exercises</div>
+    <div class="nav-item" data-page="foods" onclick="showPage('foods')">Foods</div>
+    <div class="nav-item" data-page="products" onclick="showPage('products')">Products</div>
+    <div class="nav-item" data-page="users" onclick="showPage('users')">Users</div>
+    <div class="sidebar-bottom">
+      <button class="logout-btn" onclick="doLogout()">Sign Out</button>
+    </div>
+  </nav>
+
+  <div class="main">
+    <!-- Dashboard -->
+    <div id="page-dashboard" class="page">
+      <div class="page-header"><h2>Dashboard</h2></div>
+      <div id="statsGrid" class="stat-grid"></div>
+    </div>
+
+    <!-- Categories -->
+    <div id="page-categories" class="page" style="display:none">
+      <div class="page-header">
+        <h2>Categories</h2>
+        <button class="btn btn-primary" onclick="openCategoryModal()">+ Add Category</button>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Image</th><th>Name</th><th>Exercises</th><th>Order</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="categoriesBody"></tbody>
+      </table></div>
+    </div>
+
+    <!-- Exercises -->
+    <div id="page-exercises" class="page" style="display:none">
+      <div class="page-header">
+        <h2>Exercises</h2>
+        <div style="display:flex;gap:12px;align-items:center">
+          <select id="exerciseFilterCat" onchange="loadExercises()" style="width:200px">
+            <option value="">All Categories</option>
+          </select>
+          <button class="btn btn-primary" onclick="openExerciseModal()">+ Add Exercise</button>
+        </div>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Image</th><th>Name</th><th>Category</th><th>Video</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="exercisesBody"></tbody>
+      </table></div>
+    </div>
+
+    <!-- Foods -->
+    <div id="page-foods" class="page" style="display:none">
+      <div class="page-header">
+        <h2>Foods</h2>
+        <input type="text" id="foodSearch" placeholder="Search foods..." style="width:260px" oninput="debouncedLoadFoods()">
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Name</th><th>Brand</th><th>Calories</th><th>Protein</th><th>Carbs</th><th>Fat</th><th>Barcode</th></tr></thead>
+        <tbody id="foodsBody"></tbody>
+      </table></div>
+    </div>
+
+    <!-- Products -->
+    <div id="page-products" class="page" style="display:none">
+      <div class="page-header">
+        <h2>Products</h2>
+        <button class="btn btn-primary" onclick="openProductModal()">+ Add Product</button>
+      </div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Image</th><th>Name</th><th>Price</th><th>GYMILES</th><th>Category</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="productsBody"></tbody>
+      </table></div>
+    </div>
+
+    <!-- Users -->
+    <div id="page-users" class="page" style="display:none">
+      <div class="page-header"><h2>Users</h2></div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Name</th><th>Email</th><th>Goal</th><th>GYMILES</th><th>Admin</th><th>Joined</th></tr></thead>
+        <tbody id="usersBody"></tbody>
+      </table></div>
+    </div>
+  </div>
+</div>
+
+<!-- Category Modal -->
+<div class="modal-overlay" id="categoryModal">
+  <div class="modal">
+    <h3 id="categoryModalTitle">Add Category</h3>
+    <input type="hidden" id="catEditId">
+    <div class="form-group">
+      <label>Name</label>
+      <input type="text" id="catName" placeholder="e.g. Chest">
+    </div>
+    <div class="form-group">
+      <label>Sort Order</label>
+      <input type="number" id="catSortOrder" value="0">
+    </div>
+    <div class="form-group">
+      <label>Category Image</label>
+      <div id="catCurrentImage" class="media-current" style="display:none"></div>
+      <div class="upload-zone" id="catImageZone" onclick="document.getElementById('catImageInput').click()">
+        <p>Click to upload image</p>
+        <input type="file" id="catImageInput" accept="image/*" style="display:none" onchange="handleFileSelect(this,'catImageZone')">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('categoryModal')">Cancel</button>
+      <button class="btn btn-primary" id="catSaveBtn" onclick="saveCategory()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Exercise Modal -->
+<div class="modal-overlay" id="exerciseModal">
+  <div class="modal">
+    <h3 id="exerciseModalTitle">Add Exercise</h3>
+    <input type="hidden" id="exEditId">
+    <div class="form-group">
+      <label>Name</label>
+      <input type="text" id="exName" placeholder="e.g. Bench Press">
+    </div>
+    <div class="form-group">
+      <label>Category</label>
+      <select id="exCategory"></select>
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <textarea id="exDescription" placeholder="Exercise instructions..."></textarea>
+    </div>
+    <div class="form-group">
+      <label>Exercise Image</label>
+      <div id="exCurrentImage" class="media-current" style="display:none"></div>
+      <div class="upload-zone" id="exImageZone" onclick="document.getElementById('exImageInput').click()">
+        <p>Click to upload image</p>
+        <input type="file" id="exImageInput" accept="image/*" style="display:none" onchange="handleFileSelect(this,'exImageZone')">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Exercise Video</label>
+      <div id="exCurrentVideo" class="media-current" style="display:none"></div>
+      <div class="upload-zone" id="exVideoZone" onclick="document.getElementById('exVideoInput').click()">
+        <p>Click to upload video (MP4, up to 100 MB)</p>
+        <input type="file" id="exVideoInput" accept="video/mp4,video/quicktime" style="display:none" onchange="handleFileSelect(this,'exVideoZone')">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('exerciseModal')">Cancel</button>
+      <button class="btn btn-primary" id="exSaveBtn" onclick="saveExercise()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Product Modal -->
+<div class="modal-overlay" id="productModal">
+  <div class="modal">
+    <h3 id="productModalTitle">Add Product</h3>
+    <input type="hidden" id="prodEditId">
+    <div class="form-group">
+      <label>Name</label>
+      <input type="text" id="prodName" placeholder="Product name">
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <textarea id="prodDescription" placeholder="Product description..."></textarea>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group">
+        <label>Price ($)</label>
+        <input type="number" id="prodPrice" value="0" step="0.01">
+      </div>
+      <div class="form-group">
+        <label>GYMILES Price</label>
+        <input type="number" id="prodGymiles" value="0">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Category</label>
+      <input type="text" id="prodCategory" placeholder="e.g. Supplements">
+    </div>
+    <div class="form-group">
+      <label>Product Image</label>
+      <div id="prodCurrentImage" class="media-current" style="display:none"></div>
+      <div class="upload-zone" id="prodImageZone" onclick="document.getElementById('prodImageInput').click()">
+        <p>Click to upload image</p>
+        <input type="file" id="prodImageInput" accept="image/*" style="display:none" onchange="handleFileSelect(this,'prodImageZone')">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('productModal')">Cancel</button>
+      <button class="btn btn-primary" id="prodSaveBtn" onclick="saveProduct()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script>
+const API = (window.__CONFIG__?.API_URL || '') + '/api/admin';
+let token = localStorage.getItem('admin_token');
+
+// ─── Auth ─────────────────────────────────────────────
+
+function headers() { return { Authorization: 'Bearer ' + token }; }
+
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
+  const errEl = document.getElementById('loginError');
+  errEl.style.display = 'none';
+  try {
+    const r = await fetch(API + '/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const json = await r.json();
+    if (!r.ok) throw new Error(json.message || 'Login failed');
+    token = json.data.token;
+    localStorage.setItem('admin_token', token);
+    enterApp();
+  } catch (e) {
+    errEl.textContent = e.message;
+    errEl.style.display = 'block';
+  }
+}
+
+function doLogout() {
+  token = null;
+  localStorage.removeItem('admin_token');
+  document.getElementById('appView').style.display = 'none';
+  document.getElementById('loginView').style.display = 'flex';
+}
+
+function enterApp() {
+  document.getElementById('loginView').style.display = 'none';
+  document.getElementById('appView').style.display = 'block';
+  showPage('dashboard');
+}
+
+document.getElementById('loginPassword').addEventListener('keydown', (e) => { if (e.key === 'Enter') doLogin(); });
+
+if (token) enterApp(); // auto-login if token stored
+
+// ─── Navigation ───────────────────────────────────────
+
+function showPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+  document.getElementById('page-' + page).style.display = 'block';
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === page));
+  loaders[page]?.();
+}
+
+const loaders = {
+  dashboard: loadStats,
+  categories: loadCategories,
+  exercises: loadExercises,
+  foods: loadFoods,
+  products: loadProducts,
+  users: loadUsers,
+};
+
+// ─── API helpers ──────────────────────────────────────
+
+async function api(path, opts = {}) {
+  const r = await fetch(API + path, { ...opts, headers: { ...headers(), ...(opts.headers || {}) } });
+  if (r.status === 401) { doLogout(); throw new Error('Session expired'); }
+  const json = await r.json();
+  if (!r.ok) throw new Error(json.message || 'Request failed');
+  return json.data;
+}
+
+function toast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isError ? ' error' : '');
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+// ─── Dashboard ────────────────────────────────────────
+
+async function loadStats() {
+  try {
+    const s = await api('/stats');
+    document.getElementById('statsGrid').innerHTML = [
+      statCard('Users', s.users, '#3b82f6'),
+      statCard('Categories', s.categories, '#8b5cf6'),
+      statCard('Exercises', s.exercises, '#22c55e'),
+      statCard('Foods', s.foods, '#f59e0b'),
+      statCard('Products', s.products, '#ec4899'),
+    ].join('');
+  } catch (e) { toast(e.message, true); }
+}
+
+function statCard(label, value, color) {
+  return `<div class="stat-card"><div class="label">${label}</div><div class="value" style="color:${color}">${value}</div></div>`;
+}
+
+// ─── Categories ───────────────────────────────────────
+
+let categoriesCache = [];
+
+async function loadCategories() {
+  const body = document.getElementById('categoriesBody');
+  body.innerHTML = '<tr class="loading-row"><td colspan="6"><div class="spinner"></div></td></tr>';
+  try {
+    categoriesCache = await api('/categories');
+    if (!categoriesCache.length) {
+      body.innerHTML = '<tr><td colspan="6" class="empty"><h3>No categories yet</h3><p>Click "+ Add Category" to create one</p></td></tr>';
+      return;
+    }
+    body.innerHTML = categoriesCache.map(c => `<tr>
+      <td>${c.imageUrl ? `<img class="thumb" src="${c.imageUrl}">` : '<div class="thumb-placeholder">No img</div>'}</td>
+      <td><strong>${esc(c.name)}</strong></td>
+      <td>${c.exerciseCount ?? c._count?.exercises ?? 0}</td>
+      <td>${c.sortOrder}</td>
+      <td><span class="badge badge-${c.status}">${c.status}</span></td>
+      <td><div class="btn-group">
+        <button class="btn btn-sm btn-outline" onclick="editCategory('${c.id}')">Edit</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteCategory('${c.id}')">Delete</button>
+      </div></td>
+    </tr>`).join('');
+  } catch (e) { toast(e.message, true); }
+}
+
+function openCategoryModal(cat = null) {
+  document.getElementById('categoryModalTitle').textContent = cat ? 'Edit Category' : 'Add Category';
+  document.getElementById('catEditId').value = cat?.id || '';
+  document.getElementById('catName').value = cat?.name || '';
+  document.getElementById('catSortOrder').value = cat?.sortOrder ?? 0;
+  document.getElementById('catImageInput').value = '';
+  resetUploadZone('catImageZone');
+  const cur = document.getElementById('catCurrentImage');
+  if (cat?.imageUrl) { cur.innerHTML = `<img src="${cat.imageUrl}" style="width:64px;height:64px;border-radius:6px;object-fit:cover"><span class="label">Current image</span>`; cur.style.display = 'flex'; }
+  else { cur.style.display = 'none'; }
+  openModal('categoryModal');
+}
+
+function editCategory(id) { openCategoryModal(categoriesCache.find(c => c.id === id)); }
+
+async function saveCategory() {
+  const id = document.getElementById('catEditId').value;
+  const fd = new FormData();
+  fd.append('name', document.getElementById('catName').value);
+  fd.append('sortOrder', document.getElementById('catSortOrder').value);
+  const file = document.getElementById('catImageInput').files[0];
+  if (file) fd.append('image', file);
+
+  try {
+    document.getElementById('catSaveBtn').disabled = true;
+    document.getElementById('catSaveBtn').textContent = 'Saving...';
+    await fetch(API + (id ? `/categories/${id}` : '/categories'), {
+      method: id ? 'PUT' : 'POST', headers: headers(), body: fd,
+    }).then(r => r.json());
+    toast(id ? 'Category updated' : 'Category created');
+    closeModal('categoryModal');
+    loadCategories();
+    populateCategoryDropdowns();
+  } catch (e) { toast(e.message, true); }
+  finally { document.getElementById('catSaveBtn').disabled = false; document.getElementById('catSaveBtn').textContent = 'Save'; }
+}
+
+async function deleteCategory(id) {
+  if (!confirm('Delete this category?')) return;
+  try {
+    await api(`/categories/${id}`, { method: 'DELETE' });
+    toast('Category deleted');
+    loadCategories();
+  } catch (e) { toast(e.message, true); }
+}
+
+// ─── Exercises ────────────────────────────────────────
+
+let exercisesCache = [];
+
+async function populateCategoryDropdowns() {
+  try {
+    if (!categoriesCache.length) categoriesCache = await api('/categories');
+    const opts = categoriesCache.filter(c => c.status === 'active').map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
+    document.getElementById('exCategory').innerHTML = '<option value="">Select category</option>' + opts;
+    document.getElementById('exerciseFilterCat').innerHTML = '<option value="">All Categories</option>' + opts;
+  } catch (e) { /* silent */ }
+}
+
+async function loadExercises() {
+  const body = document.getElementById('exercisesBody');
+  body.innerHTML = '<tr class="loading-row"><td colspan="6"><div class="spinner"></div></td></tr>';
+  await populateCategoryDropdowns();
+  const catId = document.getElementById('exerciseFilterCat').value;
+  try {
+    exercisesCache = await api('/exercises' + (catId ? `?categoryId=${catId}` : ''));
+    if (!exercisesCache.length) {
+      body.innerHTML = '<tr><td colspan="6" class="empty"><h3>No exercises found</h3><p>Click "+ Add Exercise" to create one</p></td></tr>';
+      return;
+    }
+    body.innerHTML = exercisesCache.map(e => `<tr>
+      <td>${e.imageUrl ? `<img class="thumb" src="${e.imageUrl}">` : '<div class="thumb-placeholder">No img</div>'}</td>
+      <td><strong>${esc(e.name)}</strong>${e.description ? `<br><small style="color:var(--text2)">${esc(e.description).slice(0,60)}</small>` : ''}</td>
+      <td>${esc(e.categoryName || e.category?.name || '')}</td>
+      <td>${e.videoUrl ? '<span class="badge badge-active">Yes</span>' : '<span style="color:var(--text2)">None</span>'}</td>
+      <td><span class="badge badge-${e.status}">${e.status}</span></td>
+      <td><div class="btn-group">
+        <button class="btn btn-sm btn-outline" onclick="editExercise('${e.id}')">Edit</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteExercise('${e.id}')">Delete</button>
+      </div></td>
+    </tr>`).join('');
+  } catch (e) { toast(e.message, true); }
+}
+
+function openExerciseModal(ex = null) {
+  document.getElementById('exerciseModalTitle').textContent = ex ? 'Edit Exercise' : 'Add Exercise';
+  document.getElementById('exEditId').value = ex?.id || '';
+  document.getElementById('exName').value = ex?.name || '';
+  document.getElementById('exCategory').value = ex?.categoryId || '';
+  document.getElementById('exDescription').value = ex?.description || '';
+  document.getElementById('exImageInput').value = '';
+  document.getElementById('exVideoInput').value = '';
+  resetUploadZone('exImageZone');
+  resetUploadZone('exVideoZone');
+  const curImg = document.getElementById('exCurrentImage');
+  if (ex?.imageUrl) { curImg.innerHTML = `<img src="${ex.imageUrl}" style="width:64px;height:64px;border-radius:6px;object-fit:cover"><span class="label">Current image</span>`; curImg.style.display = 'flex'; }
+  else { curImg.style.display = 'none'; }
+  const curVid = document.getElementById('exCurrentVideo');
+  if (ex?.videoUrl) { curVid.innerHTML = `<video src="${ex.videoUrl}" style="width:120px;border-radius:6px" controls></video><span class="label">Current video</span>`; curVid.style.display = 'flex'; }
+  else { curVid.style.display = 'none'; }
+  openModal('exerciseModal');
+}
+
+function editExercise(id) { openExerciseModal(exercisesCache.find(e => e.id === id)); }
+
+async function saveExercise() {
+  const id = document.getElementById('exEditId').value;
+  const fd = new FormData();
+  fd.append('name', document.getElementById('exName').value);
+  fd.append('categoryId', document.getElementById('exCategory').value);
+  fd.append('description', document.getElementById('exDescription').value);
+  const imgFile = document.getElementById('exImageInput').files[0];
+  const vidFile = document.getElementById('exVideoInput').files[0];
+  if (imgFile) fd.append('image', imgFile);
+  if (vidFile) fd.append('video', vidFile);
+
+  try {
+    document.getElementById('exSaveBtn').disabled = true;
+    document.getElementById('exSaveBtn').textContent = vidFile ? 'Uploading video...' : 'Saving...';
+    const r = await fetch(API + (id ? `/exercises/${id}` : '/exercises'), {
+      method: id ? 'PUT' : 'POST', headers: headers(), body: fd,
+    });
+    const json = await r.json();
+    if (!r.ok) throw new Error(json.message);
+    toast(id ? 'Exercise updated' : 'Exercise created');
+    closeModal('exerciseModal');
+    loadExercises();
+  } catch (e) { toast(e.message, true); }
+  finally { document.getElementById('exSaveBtn').disabled = false; document.getElementById('exSaveBtn').textContent = 'Save'; }
+}
+
+async function deleteExercise(id) {
+  if (!confirm('Delete this exercise?')) return;
+  try {
+    await api(`/exercises/${id}`, { method: 'DELETE' });
+    toast('Exercise deleted');
+    loadExercises();
+  } catch (e) { toast(e.message, true); }
+}
+
+// ─── Foods ────────────────────────────────────────────
+
+let foodsDebounce;
+function debouncedLoadFoods() { clearTimeout(foodsDebounce); foodsDebounce = setTimeout(loadFoods, 300); }
+
+async function loadFoods() {
+  const body = document.getElementById('foodsBody');
+  body.innerHTML = '<tr class="loading-row"><td colspan="7"><div class="spinner"></div></td></tr>';
+  const q = document.getElementById('foodSearch')?.value || '';
+  try {
+    const data = await api(`/foods?q=${encodeURIComponent(q)}&limit=100`);
+    const foods = data.foods || data;
+    if (!foods.length) {
+      body.innerHTML = '<tr><td colspan="7" class="empty"><h3>No foods found</h3></td></tr>';
+      return;
+    }
+    body.innerHTML = foods.map(f => `<tr>
+      <td>${esc(f.name)}</td>
+      <td>${esc(f.brand || '-')}</td>
+      <td>${f.calories}</td>
+      <td>${f.protein}g</td>
+      <td>${f.carbs}g</td>
+      <td>${f.fat}g</td>
+      <td><code>${f.barcode || '-'}</code></td>
+    </tr>`).join('');
+  } catch (e) { toast(e.message, true); }
+}
+
+// ─── Products ─────────────────────────────────────────
+
+let productsCache = [];
+
+async function loadProducts() {
+  const body = document.getElementById('productsBody');
+  body.innerHTML = '<tr class="loading-row"><td colspan="7"><div class="spinner"></div></td></tr>';
+  try {
+    productsCache = await api('/products');
+    if (!productsCache.length) {
+      body.innerHTML = '<tr><td colspan="7" class="empty"><h3>No products yet</h3></td></tr>';
+      return;
+    }
+    body.innerHTML = productsCache.map(p => `<tr>
+      <td>${p.imageUrl ? `<img class="thumb" src="${p.imageUrl}">` : '<div class="thumb-placeholder">No img</div>'}</td>
+      <td><strong>${esc(p.name)}</strong></td>
+      <td>$${Number(p.price).toFixed(2)}</td>
+      <td>${p.gymilesPrice}</td>
+      <td>${esc(p.category || '-')}</td>
+      <td><span class="badge badge-${p.status}">${p.status}</span></td>
+      <td><div class="btn-group">
+        <button class="btn btn-sm btn-outline" onclick="editProduct('${p.id}')">Edit</button>
+      </div></td>
+    </tr>`).join('');
+  } catch (e) { toast(e.message, true); }
+}
+
+function openProductModal(prod = null) {
+  document.getElementById('productModalTitle').textContent = prod ? 'Edit Product' : 'Add Product';
+  document.getElementById('prodEditId').value = prod?.id || '';
+  document.getElementById('prodName').value = prod?.name || '';
+  document.getElementById('prodDescription').value = prod?.description || '';
+  document.getElementById('prodPrice').value = prod?.price ?? 0;
+  document.getElementById('prodGymiles').value = prod?.gymilesPrice ?? 0;
+  document.getElementById('prodCategory').value = prod?.category || '';
+  document.getElementById('prodImageInput').value = '';
+  resetUploadZone('prodImageZone');
+  const cur = document.getElementById('prodCurrentImage');
+  if (prod?.imageUrl) { cur.innerHTML = `<img src="${prod.imageUrl}" style="width:64px;height:64px;border-radius:6px;object-fit:cover"><span class="label">Current image</span>`; cur.style.display = 'flex'; }
+  else { cur.style.display = 'none'; }
+  openModal('productModal');
+}
+
+function editProduct(id) { openProductModal(productsCache.find(p => p.id === id)); }
+
+async function saveProduct() {
+  const id = document.getElementById('prodEditId').value;
+  const fd = new FormData();
+  fd.append('name', document.getElementById('prodName').value);
+  fd.append('description', document.getElementById('prodDescription').value);
+  fd.append('price', document.getElementById('prodPrice').value);
+  fd.append('gymilesPrice', document.getElementById('prodGymiles').value);
+  fd.append('category', document.getElementById('prodCategory').value);
+  const file = document.getElementById('prodImageInput').files[0];
+  if (file) fd.append('image', file);
+
+  try {
+    document.getElementById('prodSaveBtn').disabled = true;
+    document.getElementById('prodSaveBtn').textContent = 'Saving...';
+    await fetch(API + (id ? `/products/${id}` : '/products'), {
+      method: id ? 'PUT' : 'POST', headers: headers(), body: fd,
+    }).then(r => r.json());
+    toast(id ? 'Product updated' : 'Product created');
+    closeModal('productModal');
+    loadProducts();
+  } catch (e) { toast(e.message, true); }
+  finally { document.getElementById('prodSaveBtn').disabled = false; document.getElementById('prodSaveBtn').textContent = 'Save'; }
+}
+
+// ─── Users ────────────────────────────────────────────
+
+async function loadUsers() {
+  const body = document.getElementById('usersBody');
+  body.innerHTML = '<tr class="loading-row"><td colspan="6"><div class="spinner"></div></td></tr>';
+  try {
+    const data = await api('/users?limit=100');
+    const users = data.users || data;
+    if (!users.length) {
+      body.innerHTML = '<tr><td colspan="6" class="empty"><h3>No users yet</h3></td></tr>';
+      return;
+    }
+    body.innerHTML = users.map(u => `<tr>
+      <td>${esc(u.name || '-')}</td>
+      <td>${esc(u.email)}</td>
+      <td>${esc(u.fitnessGoal || '-')}</td>
+      <td>${u.gymiles ?? 0}</td>
+      <td>${u.isTrainer ? '<span class="badge badge-active">Admin</span>' : '-'}</td>
+      <td>${new Date(u.createdAt).toLocaleDateString()}</td>
+    </tr>`).join('');
+  } catch (e) { toast(e.message, true); }
+}
+
+// ─── Helpers ──────────────────────────────────────────
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function handleFileSelect(input, zoneId) {
+  const zone = document.getElementById(zoneId);
+  if (input.files[0]) {
+    zone.classList.add('has-file');
+    zone.querySelector('p').innerHTML = `<span class="file-name">${esc(input.files[0].name)}</span> (${(input.files[0].size / 1024 / 1024).toFixed(1)} MB)`;
+  }
+}
+
+function resetUploadZone(zoneId) {
+  const zone = document.getElementById(zoneId);
+  zone.classList.remove('has-file');
+  const isVideo = zoneId.toLowerCase().includes('video');
+  zone.querySelector('p').textContent = isVideo ? 'Click to upload video (MP4, up to 100 MB)' : 'Click to upload image';
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', (e) => { if (e.target === o) o.classList.remove('open'); });
+});
+</script>
+</body>
+</html>

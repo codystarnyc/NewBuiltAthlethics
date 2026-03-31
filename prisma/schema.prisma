@@ -7,6 +7,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ─── Enums ───────────────────────────────────────────────
+
 enum ImageType {
   food
   receipt
@@ -19,6 +21,276 @@ enum ProcessingStatus {
   completed
   failed
 }
+
+// ─── Auth & Users ────────────────────────────────────────
+
+model User {
+  id               String   @id @default(uuid())
+  email            String   @unique
+  passwordHash     String   @map("password_hash")
+  name             String   @default("")
+  gender           String?
+  weight           Float?
+  height           Float?
+  dateOfBirth      String?  @map("date_of_birth")
+  gym              String?
+  fitnessGoal      String?  @map("fitness_goal")
+  gymFrequency     String?  @map("gym_frequency")
+  gymDays          String[] @default([]) @map("gym_days")
+  autoTracking     Boolean  @default(false) @map("auto_tracking")
+  isTrainer        Boolean  @default(false) @map("is_trainer")
+  promoCode        String?  @map("promo_code")
+  referralCode     String?  @map("referral_code")
+  gymiles          Int      @default(0)
+  imageUrl         String?  @map("image_url")
+  isSubscribed     Boolean  @default(false) @map("is_subscribed")
+  subscriptionType String?  @map("subscription_type")
+  pushToken        String?  @map("push_token")
+  pushTokenFcm     String?  @map("push_token_fcm")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  workouts         Workout[]
+  customExercises  CustomExercise[]
+  foodDiaryEntries FoodDiaryEntry[]
+  userMealPlans    UserMealPlan[]
+  shoppingItems    ShoppingItem[]
+  healthRecords    HealthRecord[]
+  productReviews   ProductReview[]
+  orders           Order[]
+
+  @@index([email])
+  @@map("users")
+}
+
+// ─── Exercise Library ────────────────────────────────────
+
+model Category {
+  id        String     @id @default(uuid())
+  name      String
+  imageUrl  String?    @map("image_url")
+  status    String     @default("active")
+  sortOrder Int        @default(0) @map("sort_order")
+  createdAt DateTime   @default(now()) @map("created_at")
+  exercises Exercise[]
+
+  @@map("categories")
+}
+
+model Exercise {
+  id           String    @id @default(uuid())
+  name         String
+  categoryId   String    @map("category_id")
+  description  String?
+  imageUrl     String?   @map("image_url")
+  videoUrl     String?   @map("video_url")
+  isCustom     Boolean   @default(false) @map("is_custom")
+  status       String    @default("active")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  category Category  @relation(fields: [categoryId], references: [id])
+  workouts Workout[]
+
+  @@index([categoryId])
+  @@map("exercises")
+}
+
+model CustomExercise {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  name       String
+  categoryId String?  @map("category_id")
+  notes      String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("custom_exercises")
+}
+
+// ─── Workouts ────────────────────────────────────────────
+
+model Workout {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  exerciseId   String   @map("exercise_id")
+  exerciseName String   @map("exercise_name")
+  date         String
+  sets         Json     @default("[]")
+  notes        String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercise Exercise @relation(fields: [exerciseId], references: [id])
+
+  @@index([userId, date])
+  @@index([userId, exerciseId])
+  @@map("workouts")
+}
+
+// ─── Food ────────────────────────────────────────────────
+
+model Food {
+  id          String   @id @default(uuid())
+  name        String
+  brand       String?
+  barcode     String?  @unique
+  calories    Float    @default(0)
+  protein     Float    @default(0)
+  carbs       Float    @default(0)
+  fat         Float    @default(0)
+  fiber       Float?
+  sugar       Float?
+  sodium      Float?
+  servingSize String?  @map("serving_size")
+  servingUnit String?  @map("serving_unit")
+  imageUrl    String?  @map("image_url")
+  searchData  String?  @map("search_data")
+  reviewed    Boolean  @default(false)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([name])
+  @@index([barcode])
+  @@map("foods")
+}
+
+model FoodDiaryEntry {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  uploadId    String?  @map("upload_id")
+  date        DateTime @default(now())
+  mealType    String   @map("meal_type")
+  foodName    String   @map("food_name")
+  servingSize String?  @map("serving_size")
+  calories    Float    @default(0)
+  protein     Float    @default(0)
+  carbs       Float    @default(0)
+  fat         Float    @default(0)
+  fiber       Float?
+  sugar       Float?
+  imageUrl    String?  @map("image_url")
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
+  @@map("food_diary_entries")
+}
+
+// ─── Meal Plans ──────────────────────────────────────────
+
+model UserMealPlan {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  planData  Json     @map("plan_data")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("user_meal_plans")
+}
+
+model ShoppingItem {
+  id             String  @id @default(uuid())
+  userId         String  @map("user_id")
+  ingredientName String  @map("ingredient_name")
+  amount         Float   @default(0)
+  unit           String  @default("")
+  recipeId       String  @map("recipe_id")
+  recipeName     String  @map("recipe_name")
+  checked        Boolean @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("shopping_items")
+}
+
+// ─── Health Data ─────────────────────────────────────────
+
+model HealthRecord {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  date          String
+  steps         Int?
+  heartRate     Int?     @map("heart_rate")
+  calories      Float?
+  distance      Float?
+  activeMinutes Int?     @map("active_minutes")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("health_records")
+}
+
+// ─── Products & Rewards ──────────────────────────────────
+
+model Product {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+  imageUrl    String? @map("image_url")
+  price       Float   @default(0)
+  gymilesPrice Int    @default(0) @map("gymiles_price")
+  category    String?
+  vendorId    String? @map("vendor_id")
+  status      String  @default("active")
+
+  reviews ProductReview[]
+  orderItems OrderItem[]
+
+  @@map("products")
+}
+
+model ProductReview {
+  id        String   @id @default(uuid())
+  productId String   @map("product_id")
+  userId    String   @map("user_id")
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("product_reviews")
+}
+
+model Order {
+  id        String      @id @default(uuid())
+  userId    String      @map("user_id")
+  total     Float       @default(0)
+  status    String      @default("pending")
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items OrderItem[]
+
+  @@index([userId])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String @id @default(uuid())
+  orderId   String @map("order_id")
+  productId String @map("product_id")
+  quantity  Int    @default(1)
+  price     Float  @default(0)
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+// ─── Image Processing (existing) ─────────────────────────
 
 model Upload {
   id        String           @id @default(uuid())
@@ -76,26 +348,4 @@ model MealPlan {
   @@index([userId])
   @@index([createdAt])
   @@map("meal_plans")
-}
-
-model FoodDiaryEntry {
-  id          String   @id @default(uuid())
-  userId      String   @map("user_id")
-  uploadId    String?  @map("upload_id")
-  date        DateTime @default(now())
-  mealType    String   @map("meal_type")
-  foodName    String   @map("food_name")
-  servingSize String?  @map("serving_size")
-  calories    Float    @default(0)
-  protein     Float    @default(0)
-  carbs       Float    @default(0)
-  fat         Float    @default(0)
-  fiber       Float?
-  sugar       Float?
-  imageUrl    String?  @map("image_url")
-  notes       String?
-  createdAt   DateTime @default(now()) @map("created_at")
-
-  @@index([userId, date])
-  @@map("food_diary_entries")
 }

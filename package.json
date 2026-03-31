@@ -1,11 +1,11 @@
 {
-  "name": "image-upload-api",
-  "version": "2.0.0",
-  "description": "AI-powered image upload and processing API for Built Athletics",
+  "name": "built-athletics-api",
+  "version": "3.0.0",
+  "description": "Unified backend API for Built Athletics — auth, user, exercise, food, meal plans, rewards, health, and AI image processing",
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc",
+    "build": "tsc && mkdir -p dist/admin && cp src/admin/index.html src/admin/config.js dist/admin/",
     "start": "node dist/server.js",
     "lint": "tsc --noEmit"
   },
@@ -17,6 +17,9 @@
   ],
   "license": "ISC",
   "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1020.0",
     "@aws-sdk/s3-request-presigner": "^3.1020.0",

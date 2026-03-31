@@ -1,0 +1,11 @@
+.git
+node_modules
+src
+BuiltAthleticsMobile
+admin-dashboard
+app
+*.ts
+!dist/**
+.env
+.DS_Store
+agent-transcripts

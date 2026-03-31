@@ -1,0 +1,9 @@
+{
+  "name": "built-athletics-admin",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node build.js",
+    "dev": "node build.js && npx serve dist -p 3002"
+  }
+}
