@@ -1,0 +1,19 @@
+branch-defaults:
+  main:
+    environment: built-athletics-prod
+environment-defaults:
+  built-athletics-prod:
+    branch: null
+    repository: null
+global:
+  application_name: built-athletics-api
+  default_ec2_keyname: null
+  default_platform: Node.js 22
+  default_region: us-east-2
+  include_git: true
+  instance_profile: null
+  platform_name: null
+  platform_version: null
+  profile: null
+  sc: git
+  workspace_type: Application
