@@ -68,26 +68,45 @@ function useGemini(): boolean {
   return env.visionProvider === 'gemini' && !!env.gemini.apiKey;
 }
 
-export async function analyzeFoodImage(imageUrl: string): Promise<FoodAnalysis> {
-  const userText = 'Analyze the food in this image. Identify each food item and estimate its nutritional content.';
+async function withFallback<T>(
+  systemPrompt: string,
+  userText: string,
+  imageUrl: string,
+  maxTokens: number,
+): Promise<T> {
   if (useGemini()) {
-    return geminiVision<FoodAnalysis>(FOOD_PROMPT, userText, imageUrl);
+    try {
+      return await geminiVision<T>(systemPrompt, userText, imageUrl);
+    } catch (err) {
+      console.warn('Gemini vision failed, falling back to OpenAI:', (err as Error).message);
+    }
   }
-  return openaiVision<FoodAnalysis>(FOOD_PROMPT, userText, imageUrl, 1500);
+  return openaiVision<T>(systemPrompt, userText, imageUrl, maxTokens);
+}
+
+export async function analyzeFoodImage(imageUrl: string): Promise<FoodAnalysis> {
+  return withFallback<FoodAnalysis>(
+    FOOD_PROMPT,
+    'Analyze the food in this image. Identify each food item and estimate its nutritional content.',
+    imageUrl,
+    1500,
+  );
 }
 
 export async function analyzeReceiptImage(imageUrl: string): Promise<ReceiptAnalysis> {
-  const userText = 'Extract all line items and totals from this receipt.';
-  if (useGemini()) {
-    return geminiVision<ReceiptAnalysis>(RECEIPT_PROMPT, userText, imageUrl);
-  }
-  return openaiVision<ReceiptAnalysis>(RECEIPT_PROMPT, userText, imageUrl, 2000);
+  return withFallback<ReceiptAnalysis>(
+    RECEIPT_PROMPT,
+    'Extract all line items and totals from this receipt.',
+    imageUrl,
+    2000,
+  );
 }
 
 export async function analyzeBodyImage(imageUrl: string): Promise<BodyAnalysis> {
-  const userText = 'Provide a general fitness assessment based on this photo.';
-  if (useGemini()) {
-    return geminiVision<BodyAnalysis>(BODY_PROMPT, userText, imageUrl);
-  }
-  return openaiVision<BodyAnalysis>(BODY_PROMPT, userText, imageUrl, 1000);
+  return withFallback<BodyAnalysis>(
+    BODY_PROMPT,
+    'Provide a general fitness assessment based on this photo.',
+    imageUrl,
+    1000,
+  );
 }

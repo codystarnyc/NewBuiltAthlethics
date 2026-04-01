@@ -65,14 +65,18 @@ ${macroTargets}
 ${constraints.length > 0 ? 'Constraints:\n' + constraints.join('\n') : 'No specific dietary constraints.'}`;
 
   if (env.visionProvider === 'gemini' && env.gemini.apiKey) {
-    const model = getTextModel();
-    const result = await model.generateContent([
-      SYSTEM_PROMPT + '\n\n' + userPrompt,
-    ]);
+    try {
+      const model = getTextModel();
+      const result = await model.generateContent([
+        SYSTEM_PROMPT + '\n\n' + userPrompt,
+      ]);
 
-    const content = result.response.text();
-    if (!content) throw new Error('No response from Gemini meal plan generation');
-    return JSON.parse(content) as GeneratedMealPlan;
+      const content = result.response.text();
+      if (!content) throw new Error('No response from Gemini meal plan generation');
+      return JSON.parse(content) as GeneratedMealPlan;
+    } catch (err) {
+      console.warn('Gemini meal plan failed, falling back to OpenAI:', (err as Error).message);
+    }
   }
 
   const response = await getOpenAI().chat.completions.create({
