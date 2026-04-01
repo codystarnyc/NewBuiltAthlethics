@@ -98,7 +98,7 @@ async function scorePostMealWalks(
 
   const meals = await prisma.foodDiaryEntry.findMany({
     where: { userId, date: { gte: dayStart, lt: dayEnd } },
-    select: { date: true, mealType: true },
+    select: { date: true, mealTime: true, mealType: true },
     distinct: ['mealType'],
   });
 
@@ -110,7 +110,7 @@ async function scorePostMealWalks(
 
   let matchedWalks = 0;
   for (const meal of meals) {
-    const mealTime = meal.date.getTime();
+    const mealTime = (meal.mealTime ?? meal.date).getTime();
     const windowEnd = mealTime + 45 * 60_000;
 
     const matched = walks.some(
@@ -137,7 +137,7 @@ async function scoreFastedWalk(
   const firstMeal = await prisma.foodDiaryEntry.findFirst({
     where: { userId, date: { gte: dayStart, lt: dayEnd } },
     orderBy: { date: 'asc' },
-    select: { date: true },
+    select: { date: true, mealTime: true },
   });
 
   const fastedWalks = await prisma.walkLog.findMany({
@@ -150,8 +150,9 @@ async function scoreFastedWalk(
     return { score: RULE_MAX, detected: true };
   }
 
+  const firstMealTimestamp = (firstMeal.mealTime ?? firstMeal.date).getTime();
   const walkBeforeMeal = fastedWalks.some(
-    (w) => w.startTime.getTime() < firstMeal.date.getTime(),
+    (w) => w.startTime.getTime() < firstMealTimestamp,
   );
 
   return { score: walkBeforeMeal ? RULE_MAX : 0, detected: walkBeforeMeal };

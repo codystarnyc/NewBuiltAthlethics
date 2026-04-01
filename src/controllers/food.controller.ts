@@ -99,15 +99,17 @@ export async function getFoodDiary(req: Request, res: Response, next: NextFuncti
 
 export async function setFoodDiary(req: Request, res: Response, next: NextFunction) {
   try {
-    const { email, date, mealType, foodName, calories, protein, carbs, fat, servingSize, notes, imageUrl, uploadId } = req.body;
+    const { email, date, mealTime, mealType, foodName, calories, protein, carbs, fat, servingSize, notes, imageUrl, uploadId } = req.body;
     if (!email || !mealType || !foodName) throw new AppError(400, 'email, mealType, and foodName required');
     const userId = await resolveUserId(email);
 
     const entryDate = date ? new Date(date) : new Date();
+    const resolvedMealTime = mealTime ? new Date(mealTime) : entryDate;
     const entry = await prisma.foodDiaryEntry.create({
       data: {
         userId,
         date: entryDate,
+        mealTime: resolvedMealTime,
         mealType, foodName,
         calories: calories ?? 0,
         protein: protein ?? 0,

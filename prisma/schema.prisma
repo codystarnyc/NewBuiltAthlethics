@@ -163,6 +163,7 @@ model FoodDiaryEntry {
   userId      String   @map("user_id")
   uploadId    String?  @map("upload_id")
   date        DateTime @default(now())
+  mealTime    DateTime? @map("meal_time")
   mealType    String   @map("meal_type")
   foodName    String   @map("food_name")
   servingSize String?  @map("serving_size")
