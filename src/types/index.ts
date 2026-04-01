@@ -18,6 +18,8 @@ export interface FoodAnalysis {
   totalCarbs: number;
   totalFat: number;
   confidence: number;
+  mealInsulinScore?: number;
+  pfcOrder?: string[];
 }
 
 export interface DetectedFood {
@@ -30,6 +32,8 @@ export interface DetectedFood {
   fiber?: number;
   sugar?: number;
   confidence: number;
+  gi?: number;
+  insulinScore?: number;
 }
 
 export interface ReceiptAnalysis {
@@ -114,6 +118,8 @@ export interface GeneratedMeal {
   ingredients: { name: string; amount: string }[];
   instructions?: string[];
   prepTimeMinutes?: number;
+  insulinScore?: number;
+  pfcOrder?: string[];
 }
 
 export interface NutritionLookup {
@@ -125,11 +131,43 @@ export interface NutritionLookup {
     fat: number;
     carbs: number;
     fiber?: number;
+    sugar?: number;
+    sodium?: number;
+    gi?: number;
   };
   measures: { uri: string; label: string; weight: number }[];
 }
 
+export interface EdamamHint {
+  food: { foodId: string; label: string; nutrients: Record<string, number> };
+  measures?: { uri: string; label: string; weight: number }[];
+}
+
 export interface EdamamResponse {
   parsed: { food: { foodId: string; label: string; nutrients: Record<string, number> } }[];
-  hints: { food: { foodId: string; label: string; nutrients: Record<string, number> } }[];
+  hints: EdamamHint[];
+}
+
+export interface FuelTrackScore {
+  date: string;
+  pfcScore: number;
+  postMealWalks: number;
+  fastedWalk: boolean;
+  insulinScore: number;
+  overallScore: number;
+}
+
+export interface WalkEntry {
+  type: 'post_meal' | 'fasted';
+  startTime: string;
+  durationMin: number;
+  steps?: number;
+  source: 'manual' | 'apple_health' | 'google_fit';
+  mealType?: string;
+}
+
+export interface HealthSyncPayload {
+  email: string;
+  date: string;
+  walks: WalkEntry[];
 }

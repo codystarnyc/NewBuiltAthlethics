@@ -2,6 +2,7 @@ import { Router } from 'express';
 import uploadRoutes from './upload.routes';
 import mealplanRoutes from './mealplan.routes';
 import nutritionRoutes from './nutrition.routes';
+import fueltrackRoutes from './fueltrack.routes';
 import legacyRoutes from './legacy.routes';
 import authRoutes from './auth.routes';
 import userRoutes from './user.routes';
@@ -21,6 +22,7 @@ router.get('/health', healthCheck);
 router.use('/upload', uploadRoutes);
 router.use('/mealplan', mealplanRoutes);
 router.use('/nutrition', nutritionRoutes);
+router.use('/fueltrack', fueltrackRoutes);
 
 // Core backend routes (match mobile app endpoints exactly)
 router.use(authRoutes);

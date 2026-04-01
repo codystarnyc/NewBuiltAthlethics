@@ -27,6 +27,12 @@ export const env = {
     apiKey: process.env.OPENAI_API_KEY ?? '',
   },
 
+  gemini: {
+    apiKey: process.env.GEMINI_API_KEY ?? '',
+  },
+
+  visionProvider: (process.env.VISION_PROVIDER ?? 'gemini') as 'gemini' | 'openai',
+
   edamam: {
     appId: process.env.EDAMAM_APP_ID ?? '',
     appKey: process.env.EDAMAM_APP_KEY ?? '',

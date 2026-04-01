@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import { prisma } from '../services/db';
 import { success, created } from '../utils/response';
 import { AppError } from '../middleware/errorHandler';
+import { recalculateDay } from '../services/fueltrack/engine';
 
 // ─── Food database ───────────────────────────────────────
 
@@ -78,16 +79,35 @@ async function resolveUserId(email: string): Promise<string> {
   return user.id;
 }
 
+export async function getFoodDiary(req: Request, res: Response, next: NextFunction) {
+  try {
+    const email = (req.query.email ?? req.body.email) as string;
+    const date = (req.query.date ?? req.body.date) as string;
+    if (!email) throw new AppError(400, 'email is required');
+    const userId = await resolveUserId(email);
+
+    const dayStart = date ? new Date(`${date}T00:00:00Z`) : new Date(new Date().toISOString().slice(0, 10) + 'T00:00:00Z');
+    const dayEnd = new Date(dayStart.getTime() + 86400000);
+
+    const entries = await prisma.foodDiaryEntry.findMany({
+      where: { userId, date: { gte: dayStart, lt: dayEnd } },
+      orderBy: { createdAt: 'asc' },
+    });
+    success(res, entries);
+  } catch (err) { next(err); }
+}
+
 export async function setFoodDiary(req: Request, res: Response, next: NextFunction) {
   try {
     const { email, date, mealType, foodName, calories, protein, carbs, fat, servingSize, notes, imageUrl, uploadId } = req.body;
     if (!email || !mealType || !foodName) throw new AppError(400, 'email, mealType, and foodName required');
     const userId = await resolveUserId(email);
 
+    const entryDate = date ? new Date(date) : new Date();
     const entry = await prisma.foodDiaryEntry.create({
       data: {
         userId,
-        date: date ? new Date(date) : new Date(),
+        date: entryDate,
         mealType, foodName,
         calories: calories ?? 0,
         protein: protein ?? 0,
@@ -96,6 +116,10 @@ export async function setFoodDiary(req: Request, res: Response, next: NextFuncti
         servingSize, notes, imageUrl, uploadId,
       },
     });
+
+    const dateStr = entryDate.toISOString().slice(0, 10);
+    recalculateDay(userId, dateStr).catch(() => {});
+
     created(res, entry);
   } catch (err) { next(err); }
 }

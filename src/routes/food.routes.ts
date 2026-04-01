@@ -14,6 +14,7 @@ router.get('/food/search-textnew', food.searchFoodByText);
 router.post('/food/search-textnew', food.searchFoodByText);
 
 // Food diary
+router.get('/user/food-diary', food.getFoodDiary);
 router.post('/user/food-diary', food.setFoodDiary);
 router.post('/user/food-diary-delete', food.deleteFoodDiary);
 

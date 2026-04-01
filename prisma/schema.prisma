@@ -58,6 +58,8 @@ model User {
   healthRecords    HealthRecord[]
   productReviews   ProductReview[]
   orders           Order[]
+  fuelTrackDays    FuelTrackDay[]
+  walkLogs         WalkLog[]
 
   @@index([email])
   @@map("users")
@@ -288,6 +290,44 @@ model OrderItem {
   product Product @relation(fields: [productId], references: [id])
 
   @@map("order_items")
+}
+
+// ─── FuelTrack ──────────────────────────────────────────
+
+model FuelTrackDay {
+  id            String   @id @default(uuid())
+  userId        String   @map("user_id")
+  date          String
+  pfcScore      Float    @default(0)  @map("pfc_score")
+  postMealWalks Int      @default(0)  @map("post_meal_walks")
+  fastedWalk    Boolean  @default(false) @map("fasted_walk")
+  insulinScore  Float    @default(0)  @map("insulin_score")
+  overallScore  Float    @default(0)  @map("overall_score")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("fueltrack_days")
+}
+
+model WalkLog {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  date        String
+  type        String
+  startTime   DateTime @map("start_time")
+  durationMin Int      @map("duration_min")
+  steps       Int?
+  source      String   @default("manual")
+  mealType    String?  @map("meal_type")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, date])
+  @@map("walk_logs")
 }
 
 // ─── Image Processing (existing) ─────────────────────────

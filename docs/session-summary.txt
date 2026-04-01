@@ -1,0 +1,152 @@
+BUILT ATHLETICS - FULL DEVELOPMENT SESSION SUMMARY
+====================================================
+Date: March 30-31, 2026
+Project: AI-Powered Fitness & Nutrition App
+Repository: https://github.com/Gymiles-Rewards/ImageUploadAPI.git
+
+
+1. PRIMARY REQUEST AND INTENT
+------------------------------
+The primary intent is to develop an AI-Powered Fitness & Nutrition App, a mobile-first platform that tracks workouts, uses image recognition for logging food/body/receipts, generates AI-powered meal plans, and syncs with backend services.
+
+The task progressed through these major phases:
+- Mobile-First App Scaffold + Navigation + API Client
+- ImageUploadAPI Rebuild + AI Layer
+- Wire Mobile App Hooks to ImageUploadAPI
+- Screen UI Migration (all 49 placeholder screens replaced with full UI)
+- Backend Master Replacement (Unified Backend in Node.js/Prisma)
+- Admin Dashboard Development (HTML/CSS/JS)
+- Admin Dashboard Deployment to Vercel
+- Database Migration from Supabase to AWS RDS PostgreSQL
+- API Deployment to AWS Elastic Beanstalk
+- Vercel Admin Dashboard API Proxy (mixed content fix)
+- Mobile App Core Screen Wiring (GymDiary, FoodDiary, Profile)
+
+
+2. LIVE DEPLOYMENTS
+--------------------
+API (Elastic Beanstalk): http://built-athletics-prod.eba-3smbck5h.us-east-2.elasticbeanstalk.com
+Admin Dashboard (Vercel): https://admin-dashboard-lime-seven-35.vercel.app
+Admin Login: admin@builtathletics.com / Admin123!
+
+
+3. AWS INFRASTRUCTURE
+----------------------
+S3 Buckets:         built-athletics-uploads, built-athletics-processed (us-east-2)
+RDS PostgreSQL:     built-athletics-db — db.t3.micro, PostgreSQL 16.6, Free Tier (us-east-2)
+RDS Endpoint:       built-athletics-db.c7824c4imxc8.us-east-2.rds.amazonaws.com:5432
+RDS Database:       builtathletics / user: postgres
+Elastic Beanstalk:  built-athletics-prod — t3.small, Node.js 20, SingleInstance (us-east-2)
+Security Group:     sg-02cce2a35c8ab98ed — port 5432 open
+IAM User:           built-athletics-api — AdministratorAccess + S3/RDS/EC2
+IAM Roles:          aws-elasticbeanstalk-ec2-role, aws-elasticbeanstalk-service-role
+
+
+4. TECH STACK
+--------------
+
+Mobile App (React Native / Expo):
+- Expo SDK 54, TypeScript, React Navigation v7
+- Zustand state management (with AsyncStorage persistence)
+- @tanstack/react-query, axios, expo-image-picker, expo-camera, expo-secure-store
+- 49 screens with full UI (auth, onboarding, food, exercise, meal plans, rewards, profile)
+- AI image recognition (food, receipt, body analysis)
+
+Unified Backend (Node.js / Express / TypeScript / Prisma):
+- Node.js, Express, TypeScript, Prisma ORM, PostgreSQL (AWS RDS)
+- AWS S3, OpenAI Vision API (GPT-4o), Edamam Nutrition API
+- dotenv, jsonwebtoken, bcryptjs, uuid, express-rate-limit, helmet, cors, morgan, tsx
+- Controllers: auth, user, exercise, food, meal plan, health data, product, admin
+- JWT auth, bcrypt, S3 uploads (multer-s3), rate limiting
+
+Admin Dashboard:
+- Pure HTML/CSS/JS single-page app with dark theme
+- Dashboard stats, Categories CRUD, Exercises CRUD (image/video upload), Foods, Products, Users
+- Standalone on Vercel for production, embedded at /admin for local dev
+
+
+5. DATABASE SCHEMA (15 MODELS)
+-------------------------------
+User            - Authentication, profile, fitness goals, gymiles
+Category        - Exercise categories (Chest, Back, Legs, etc.)
+Exercise        - Exercise library with images/videos
+CustomExercise  - User-created exercises
+Workout         - Logged workouts with sets (reps/weight)
+Food            - Food database (name, macros, barcode)
+FoodDiaryEntry  - Daily food log by meal type
+MealPlan        - AI-generated meal plans
+UserMealPlan    - User's saved meal plans
+ShoppingItem    - Shopping list from meal plans
+HealthRecord    - Steps, heart rate, calories, distance
+Product         - Rewards marketplace products
+ProductReview   - Product reviews/ratings
+Order/OrderItem - Product orders
+Upload/ProcessingResult - AI image processing pipeline
+
+
+6. FILES MODIFIED THIS SESSION
+-------------------------------
+.env                                    - DATABASE_URL updated to AWS RDS
+prisma/schema.prisma                    - Removed directUrl (not needed for RDS)
+package.json                            - Added engines field for EB
+Procfile                                - New — EB startup command
+.ebextensions/nodecommand.config        - New — EB Node.js config
+.ebignore                               - New — EB deploy exclusions
+admin-dashboard/vercel.json             - Added API proxy rewrites
+admin-dashboard/build.js                - Fixed trailing newline, set empty API_URL for proxy
+src/controllers/food.controller.ts      - Added getFoodDiary endpoint
+src/routes/food.routes.ts               - Added GET /user/food-diary route
+Mobile: GymDiaryScreen.tsx              - Wired to fetch workouts from API
+Mobile: FoodDiaryScreen.tsx             - Wired to fetch diary entries from API
+Mobile: ProfileScreen.tsx               - Wired to fetch user profile from API
+Mobile: api/food.ts                     - Added getFoodDiary() function
+Mobile: api/endpoints.ts                - Added foodDiary.get endpoint
+
+
+7. ERRORS AND FIXES
+---------------------
+- Supabase connection issues (Tenant not found, IPv6 unreachable) → Switched to AWS RDS
+- AWS CLI not installed → brew install awscli
+- IAM unauthorized for EC2/RDS → Attached AmazonRDSFullAccess, AmazonEC2FullAccess, AdministratorAccess
+- RDS Free Tier restrictions → Set backup-retention-period 1, --no-storage-encrypted
+- Invalid PostgreSQL version 16.4 → Used 16.6
+- Stale Prisma client after RDS migration → Killed old server, regenerated Prisma client
+- EB AccessDenied → Created required IAM roles and instance profiles
+- EB npm install timeout on t3.micro → Upgraded to t3.small
+- Mixed content (HTTPS dashboard → HTTP API) → Vercel rewrite proxy in vercel.json
+- Vercel proxy returning HTML instead of JSON → Consolidated routes into rewrites
+- Browser caching stale config → Hard refresh (Cmd+Shift+R)
+
+
+8. WHAT'S NEXT
+---------------
+
+High Priority:
+1. Populate exercise library via admin dashboard (categories + exercises with images/videos)
+2. Update mobile app EXPO_PUBLIC_API_URL to point to live EB URL
+3. Test on real device (iOS/Android) — login, food diary, exercise logging, meal plans
+4. Add HTTPS to API (ACM certificate + Load Balancer or CloudFront)
+
+Medium Priority:
+5. Custom domain — api.builtathletics.com (EB), admin.builtathletics.com (Vercel)
+6. Edamam API keys for barcode/nutrition lookups
+7. Push notifications (FCM/APNs)
+8. Payment integration (Stripe) for rewards checkout
+9. Seed food database (USDA or similar)
+
+Before App Store Launch:
+10. App icons & splash screen
+11. EAS Build setup for iOS/Android production builds
+12. App Store / Play Store listings
+13. Production JWT secret (replace dev secret)
+14. Security hardening (RDS security group, rate limits, input sanitization)
+15. Monitoring (CloudWatch alarms, error alerts)
+
+
+9. CREDENTIALS REFERENCE
+--------------------------
+Admin Dashboard:  admin@builtathletics.com / Admin123!
+RDS Endpoint:     built-athletics-db.c7824c4imxc8.us-east-2.rds.amazonaws.com:5432
+RDS Database:     builtathletics / user: postgres
+EB Environment:   built-athletics-prod (t3.small, Node.js 20)
+IAM User:         built-athletics-api
