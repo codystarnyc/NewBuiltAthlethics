@@ -4,3 +4,5 @@ dist/
 .DS_Store
 *.log
 .elasticbeanstalk/app_versions/
+.elasticbeanstalk/logs/
+.claude-flow/
