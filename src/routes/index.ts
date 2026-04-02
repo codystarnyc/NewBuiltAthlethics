@@ -11,6 +11,7 @@ import foodRoutes from './food.routes';
 import baRoutes from './ba.routes';
 import healthdataRoutes from './healthdata.routes';
 import productRoutes from './product.routes';
+import fodRoutes from './fod.routes';
 import { healthCheck } from '../controllers/health.controller';
 
 const router = Router();
@@ -32,6 +33,7 @@ router.use(foodRoutes);
 router.use(baRoutes);
 router.use(healthdataRoutes);
 router.use(productRoutes);
+router.use('/fod', fodRoutes);
 
 // Legacy routes for backward compatibility
 router.use('/apiv2/order', legacyRoutes);

@@ -11,6 +11,7 @@ import AddCustomExerciseScreen from '../../screens/exercise/AddCustomExerciseScr
 import HiitTimerScreen from '../../screens/exercise/HiitTimerScreen';
 import AddRoutineScreen from '../../screens/exercise/AddRoutineScreen';
 import VideoListScreen from '../../screens/exercise/VideoListScreen';
+import FodVideoPlayerScreen from '../../screens/exercise/FodVideoPlayerScreen';
 import GymCompletionScreen from '../../screens/exercise/GymCompletionScreen';
 
 const Stack = createNativeStackNavigator<ExerciseStackParamList>();
@@ -30,7 +31,8 @@ export default function ExerciseStack() {
       <Stack.Screen name="AddCustomExercise" component={AddCustomExerciseScreen} options={{ title: 'New Exercise' }} />
       <Stack.Screen name="HiitTimer" component={HiitTimerScreen} options={{ title: 'HIIT Timer', headerShown: false }} />
       <Stack.Screen name="AddRoutine" component={AddRoutineScreen} options={{ title: 'New Routine' }} />
-      <Stack.Screen name="VideoList" component={VideoListScreen} options={{ title: 'Videos' }} />
+      <Stack.Screen name="VideoList" component={VideoListScreen} options={{ title: 'On-demand classes' }} />
+      <Stack.Screen name="FodVideoPlayer" component={FodVideoPlayerScreen} options={{ title: 'Class' }} />
       <Stack.Screen name="GymCompletion" component={GymCompletionScreen} options={{ headerShown: false }} />
     </Stack.Navigator>
   );

@@ -45,6 +45,7 @@ export type ExerciseStackParamList = {
   HiitTimer: { routineId?: string };
   AddRoutine: undefined;
   VideoList: { categoryId?: string };
+  FodVideoPlayer: { videoId: number; title?: string };
   GymCompletion: undefined;
 };
 

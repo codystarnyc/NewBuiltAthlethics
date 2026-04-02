@@ -125,6 +125,13 @@ export const ENDPOINTS = {
     addReceiptWithOrderIdBA: '/addReceiptWithOrderIdBA',
   },
 
+  fod: {
+    classes: '/api/fod/classes',
+    playbackStart: '/api/fod/playback/start',
+    playbackProgress: '/api/fod/playback/progress',
+    playbackEnd: '/api/fod/playback/end',
+  },
+
   product: {
     getAll: '/products',
     add: '/product',

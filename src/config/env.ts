@@ -39,4 +39,13 @@ export const env = {
   },
 
   backendMasterUrl: process.env.BACKEND_MASTER_URL ?? 'https://builtathletix.com',
+
+  /** Fitness On Demand (fod247) — use REACT_APP_* names for parity with web clients; clientSecret is server-only */
+  fitnessOnDemand: {
+    flexUrl: process.env.REACT_APP_FITNESS_OD_URL ?? '',
+    managementUrl: process.env.REACT_APP_FITNESS_OD_MURL ?? '',
+    clientId: process.env.REACT_APP_FITNESS_OD_CLIENT_ID ?? '',
+    clientSecret: process.env.REACT_APP_FITNESS_OD_CLIENT_SECRET ?? '',
+    adminEmail: process.env.REACT_APP_FITNESS_ADMIN_EMAIL ?? '',
+  },
 } as const;

@@ -5,9 +5,14 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc && mkdir -p dist/admin && cp src/admin/index.html src/admin/config.js dist/admin/",
+    "build": "tsc && mkdir -p dist/admin && cp src/admin/index.html dist/admin/",
     "start": "node dist/server.js",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "test:fod": "tsx scripts/test-fod-connection.ts",
+    "trello": "tsx scripts/trello-cli.ts",
+    "trello:export": "tsx scripts/trello-cli.ts list",
+    "trello:sync": "tsx scripts/trello-cli.ts sync",
+    "trello:complete": "tsx scripts/trello-cli.ts complete"
   },
   "keywords": [
     "fitness",

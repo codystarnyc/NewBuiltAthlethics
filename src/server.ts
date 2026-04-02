@@ -31,6 +31,22 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
+// Admin dashboard runtime config (from env; never send client secret to the browser)
+app.get('/admin/config.js', (_req, res) => {
+  res.type('application/javascript');
+  res.set('Cache-Control', 'no-store');
+  const payload = {
+    API_URL: '',
+    fitnessOnDemand: {
+      flexUrl: env.fitnessOnDemand.flexUrl,
+      managementUrl: env.fitnessOnDemand.managementUrl,
+      clientId: env.fitnessOnDemand.clientId,
+      adminEmail: env.fitnessOnDemand.adminEmail,
+    },
+  };
+  res.send(`window.__CONFIG__ = ${JSON.stringify(payload)};`);
+});
+
 // Admin dashboard (served as static HTML)
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
 

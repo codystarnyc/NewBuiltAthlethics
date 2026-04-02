@@ -6,3 +6,4 @@ dist/
 .elasticbeanstalk/app_versions/
 .elasticbeanstalk/logs/
 .claude-flow/
+docs/trello-board-snapshot.json

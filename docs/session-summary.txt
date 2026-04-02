@@ -3,6 +3,10 @@ BUILT ATHLETICS - FULL DEVELOPMENT SESSION SUMMARY
 Date: March 30-31, 2026
 Project: AI-Powered Fitness & Nutrition App
 Repository: https://github.com/Gymiles-Rewards/ImageUploadAPI.git
+Project board (Trello): https://trello.com/b/bMPu750G/built-athletics
+  — Card/list data is not visible to unauthenticated HTTP fetch; Trello serves
+  a JS shell and loads boards after login. Mirror tasks here, paste summaries,
+  or use Trello JSON export / API if tooling needs the backlog verbatim.
 
 
 1. PRIMARY REQUEST AND INTENT
@@ -118,29 +122,59 @@ Mobile: api/endpoints.ts                - Added foodDiary.get endpoint
 - Browser caching stale config → Hard refresh (Cmd+Shift+R)
 
 
-8. WHAT'S NEXT
----------------
+8. WHAT'S NEXT (updated Apr 2, 2026)
+-------------------------------------
 
-High Priority:
-1. Populate exercise library via admin dashboard (categories + exercises with images/videos)
-2. Update mobile app EXPO_PUBLIC_API_URL to point to live EB URL
-3. Test on real device (iOS/Android) — login, food diary, exercise logging, meal plans
-4. Add HTTPS to API (ACM certificate + Load Balancer or CloudFront)
+Verified this session:
+- Mobile `BuiltAthleticsMobile/src/api/endpoints.ts` still uses
+  `process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:5000'` — production
+  builds must set EXPO_PUBLIC_API_URL (e.g. `.env` locally, EAS secrets for
+  store builds). iOS App Transport Security blocks plain HTTP to remote hosts
+  unless you add exceptions; prefer HTTPS on the API before wide device testing.
 
-Medium Priority:
-5. Custom domain — api.builtathletics.com (EB), admin.builtathletics.com (Vercel)
-6. Edamam API keys for barcode/nutrition lookups
-7. Push notifications (FCM/APNs)
-8. Payment integration (Stripe) for rewards checkout
-9. Seed food database (USDA or similar)
+High priority (order suggested):
+1. HTTPS for the API — ACM + Application Load Balancer (or CloudFront in front
+   of EB) so mobile and third-party clients can use a stable https:// URL.
+2. Set mobile EXPO_PUBLIC_API_URL to that HTTPS API URL; confirm Android
+   cleartext / iOS ATS as needed during transition.
+3. Populate exercise library via admin dashboard (categories + exercises with
+   images/videos) so Gym Diary and programs are usable with real data.
+4. Real-device QA — auth, food diary sync, workout logging, meal plans, image
+   upload/AI flows against the deployed API.
 
-Before App Store Launch:
-10. App icons & splash screen
-11. EAS Build setup for iOS/Android production builds
-12. App Store / Play Store listings
-13. Production JWT secret (replace dev secret)
-14. Security hardening (RDS security group, rate limits, input sanitization)
-15. Monitoring (CloudWatch alarms, error alerts)
+Medium priority:
+5. Custom domains — api.* on EB/ALB, admin.* on Vercel; update admin dashboard
+   proxy rewrites if the API hostname changes.
+6. Edamam (or equivalent) API keys for barcode and nutrition lookups.
+7. Seed or import food database (USDA / commercial dataset) for search quality.
+8. Push notifications (FCM / APNs) for reminders and engagement.
+9. Stripe (or chosen provider) for rewards marketplace checkout.
+
+Before App Store / Play Store launch:
+10. App icons, splash, and store-required screenshots/metadata.
+11. EAS Build profiles (development / preview / production) with correct env
+    vars and API URL per channel.
+12. Rotate to a strong production JWT secret; ensure it matches all deployed
+    API instances.
+13. Security pass — tighten RDS security group (API subnets only), review rate
+    limits, validate/sanitize inputs on all public routes.
+14. Observability — CloudWatch alarms, error aggregation (e.g. Sentry), uptime
+    checks on health endpoint.
+15. Optional: API integration tests + CI (lint/build/test on PR) before
+    scaling collaboration.
+
+8a. TRELLO — CONTEXT SYNC
+-------------------------
+Board: https://trello.com/b/bMPu750G/built-athletics
+Local export (API): set TRELLO_API_KEY and TRELLO_TOKEN in .env (see
+.env.example; never commit). Run: npm run trello:export
+Optional full JSON: npm run trello:export -- --json docs/trello-board-snapshot.json
+(gitignored). Revoke and regenerate the token if it was ever pasted into chat
+or committed.
+
+Board snapshot (Apr 2, 2026): lists include Bugs, Backlog, Planned, In Progress,
+Testing, Done — aligns with section 8 (HTTPS, mobile API URL, exercise seeding,
+FOD telemetry, store prep). Re-run trello:export after board changes.
 
 
 9. CREDENTIALS REFERENCE
