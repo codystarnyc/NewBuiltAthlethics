@@ -1,9 +1,8 @@
 node_modules/
 dist/
-.env
 .DS_Store
 *.log
 .elasticbeanstalk/app_versions/
 .elasticbeanstalk/logs/
 .claude-flow/
-docs/trello-board-snapshot.json
+config.bat

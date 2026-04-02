@@ -4,9 +4,6 @@ Date: March 30-31, 2026
 Project: AI-Powered Fitness & Nutrition App
 Repository: https://github.com/Gymiles-Rewards/ImageUploadAPI.git
 Project board (Trello): https://trello.com/b/bMPu750G/built-athletics
-  — Card/list data is not visible to unauthenticated HTTP fetch; Trello serves
-  a JS shell and loads boards after login. Mirror tasks here, paste summaries,
-  or use Trello JSON export / API if tooling needs the backlog verbatim.
 
 
 1. PRIMARY REQUEST AND INTENT
@@ -162,19 +159,6 @@ Before App Store / Play Store launch:
     checks on health endpoint.
 15. Optional: API integration tests + CI (lint/build/test on PR) before
     scaling collaboration.
-
-8a. TRELLO — CONTEXT SYNC
--------------------------
-Board: https://trello.com/b/bMPu750G/built-athletics
-Local export (API): set TRELLO_API_KEY and TRELLO_TOKEN in .env (see
-.env.example; never commit). Run: npm run trello:export
-Optional full JSON: npm run trello:export -- --json docs/trello-board-snapshot.json
-(gitignored). Revoke and regenerate the token if it was ever pasted into chat
-or committed.
-
-Board snapshot (Apr 2, 2026): lists include Bugs, Backlog, Planned, In Progress,
-Testing, Done — aligns with section 8 (HTTPS, mobile API URL, exercise seeding,
-FOD telemetry, store prep). Re-run trello:export after board changes.
 
 
 9. CREDENTIALS REFERENCE

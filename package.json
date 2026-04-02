@@ -8,11 +8,7 @@
     "build": "tsc && mkdir -p dist/admin && cp src/admin/index.html dist/admin/",
     "start": "node dist/server.js",
     "lint": "tsc --noEmit",
-    "test:fod": "tsx scripts/test-fod-connection.ts",
-    "trello": "tsx scripts/trello-cli.ts",
-    "trello:export": "tsx scripts/trello-cli.ts list",
-    "trello:sync": "tsx scripts/trello-cli.ts sync",
-    "trello:complete": "tsx scripts/trello-cli.ts complete"
+    "test:fod": "tsx scripts/test-fod-connection.ts"
   },
   "keywords": [
     "fitness",
